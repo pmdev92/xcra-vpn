@@ -1,0 +1,145 @@
+name: Android Full Build (v tags only)
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      ANDROID_HOME: "/tmp/Android/sdk"
+      NDK_VERSION: "28.2.13676358"
+      HEV_PATH: ".git/modules/vendor/hev-socks5-tunnel/HEAD"
+      BUILD_HEV_PATH: "vendor/build_hev.sh"
+      HEV_LIBS_PATH: "/app/src/main/jniLibs"
+      XRAY_PATH: ".git/modules/vendor/xray-core-rust/HEAD"
+      BUILD_XRAY_PATH: "vendor/download_xray.sh"
+      XRAY_LIBS_PATH: "/app/libs"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Update Sub Modules
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive
+          git submodule status --recursive
+          echo ${{ hashFiles(env.HEV_PATH) }}
+          echo ${{ hashFiles(env.BUILD_HEV_PATH) }}
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            make \
+            llvm-dev \
+            libclang-dev \
+            clang \
+            pkg-config \
+            unzip \
+            curl \
+            default-jdk \
+            build-essential \
+            libssl-dev
+
+      - name: Setup Android SDK
+        run: |
+          mkdir -p $ANDROID_HOME
+          cd /tmp
+          curl -OL https://dl.google.com/android/repository/commandlinetools-linux-6858069_latest.zip
+          unzip -q commandlinetools-linux-6858069_latest.zip
+          mv cmdline-tools $ANDROID_HOME
+
+          yes | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_HOME --licenses
+
+          $ANDROID_HOME/cmdline-tools/bin/sdkmanager \
+            --sdk_root=$ANDROID_HOME \
+            "ndk;$NDK_VERSION"
+
+      - name: Restore Hev Tun
+        id: cache-hev-tun-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}${{ env.HEV_LIBS_PATH }}
+          key: hev-tun-${{ runner.os }}-${{ env.NDK_VERSION }}-${{ hashFiles(env.HEV_PATH) }}-${{ hashFiles(env.BUILD_HEV_PATH) }}
+
+      - name: Build Hev Tun
+        if: steps.cache-hev-tun-restore.outputs.cache-hit != 'true'
+        run: |
+          export ANDROID_HOME=/tmp/Android/sdk
+          export ANDROID_SDK_ROOT=$ANDROID_HOME
+          export ANDROID_NDK_HOME=/tmp/Android/sdk/ndk/$NDK_VERSION
+          export ANDROID_NDK=/tmp/Android/sdk/ndk/$NDK_VERSION
+          export OPENSSL_DIR=$(pkg-config --variable=prefix openssl)
+          chmod +x ${{ env.BUILD_HEV_PATH }}
+          sh ${{ env.BUILD_HEV_PATH }}
+
+      - name: Save Hev Tun
+        if: steps.cache-hev-tun-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}${{ env.HEV_LIBS_PATH }}
+          key: hev-tun-${{ runner.os }}-${{ env.NDK_VERSION }}-${{ hashFiles(env.HEV_PATH) }}-${{ hashFiles(env.BUILD_HEV_PATH) }}
+
+      - name: Restore XRAY
+        id: cache-xray-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}${{ env.XRAY_LIBS_PATH }}
+          key: xray-${{ runner.os }}-${{ env.NDK_VERSION }}-${{ hashFiles(env.XRAY_PATH) }}-${{ hashFiles(env.BUILD_XRAY_PATH) }}
+
+      - name: Download Xray
+        if: steps.cache-xray-restore.outputs.cache-hit != 'true'
+        run: |
+          export ANDROID_HOME=/tmp/Android/sdk
+          export ANDROID_SDK_ROOT=$ANDROID_HOME
+          export ANDROID_NDK_HOME=/tmp/Android/sdk/ndk/$NDK_VERSION
+          export ANDROID_NDK=/tmp/Android/sdk/ndk/$NDK_VERSION
+          export OPENSSL_DIR=$(pkg-config --variable=prefix openssl)
+          chmod +x ${{ env.BUILD_XRAY_PATH }}
+          sh ${{ env.BUILD_XRAY_PATH }}
+
+      - name: Save Xray
+        if: steps.cache-xray-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}${{ env.XRAY_LIBS_PATH }}
+          key: xray-${{ runner.os }}-${{ env.NDK_VERSION }}-${{ hashFiles(env.XRAY_PATH) }}-${{ hashFiles(env.BUILD_XRAY_PATH) }}
+
+      - name: Decode Keystore
+        uses: timheuer/base64-to-file@v1
+        id: android_keystore
+        with:
+          fileName: "android_keystore.jks"
+          encodedString: ${{ secrets.APP_KEYSTORE_BASE64 }}
+
+      - name: Build Release APK
+        run: |
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+          chmod +x gradlew
+          ./gradlew assembleRelease \
+          -Pandroid.injected.signing.store.file=${{ steps.android_keystore.outputs.filePath }} \
+          -Pandroid.injected.signing.store.password=${{ secrets.APP_KEYSTORE_PASSWORD }} \
+          -Pandroid.injected.signing.key.alias=${{ secrets.APP_KEY_ALIAS }} \
+          -Pandroid.injected.signing.key.password=${{ secrets.APP_KEY_PASSWORD }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          prerelease: true
+          files: |
+            app/build/outputs/apk/**/release/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
