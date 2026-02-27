@@ -12,9 +12,8 @@ local.properties
 captures/
 .externalNativeBuild/
 .cxx/
-*.aab
 *.apk
-output-metadata.json
+output.json
 
 # IntelliJ
 *.iml
@@ -32,3 +31,7 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+app/src/main/jniLibs
+app/libs
+app/release

@@ -1,0 +1,27 @@
+[
+  {
+    "remarks": "阻断udp443",
+    "outbound_tag": "block",
+    "port": "443",
+    "network": "udp"
+  },
+  {
+    "remarks": "绕过局域网IP",
+    "outbound_tag": "direct",
+    "ip": [
+      "geo:private"
+    ]
+  },
+  {
+    "remarks": "绕过局域网域名",
+    "outbound_tag": "direct",
+    "domain": [
+      "geo:private"
+    ]
+  },
+  {
+    "remarks": "最终代理",
+    "port": "0-65535",
+    "outbound_tag": "proxy"
+  }
+]

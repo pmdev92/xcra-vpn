@@ -1,0 +1,6 @@
+[submodule "vendor/hev-socks5-tunnel"]
+	path = vendor/hev-socks5-tunnel
+	url = https://github.com/heiher/hev-socks5-tunnel
+[submodule "vendor/xray-core-rust"]
+	path = vendor/xray-core-rust
+	url = https://github.com/pmdev92/xray-core-rust

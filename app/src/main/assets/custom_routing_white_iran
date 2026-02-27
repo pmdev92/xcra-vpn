@@ -1,0 +1,37 @@
+[
+  {
+    "remarks": "Block udp443",
+    "outbound_tag": "block",
+    "port": "443",
+    "network": ["udp"]
+  },
+  {
+    "remarks": "Direct LAN IP",
+    "outbound_tag": "direct",
+    "ip": [
+      "geo:private"
+    ]
+  },
+  {
+    "remarks": "Direct LAN domains",
+    "outbound_tag": "direct",
+    "domain": [
+      "geo:private"
+    ]
+  },
+  {
+    "remarks": "Bypass Iran domains",
+    "outbound_tag": "direct",
+    "domain": [
+      "domain:ir",
+      "geo:category-ir"
+    ]
+  },
+  {
+    "remarks": "Bypass Iran IP",
+    "outbound_tag": "direct",
+    "ip": [
+       "geo:ir"
+    ]
+  }
+]
