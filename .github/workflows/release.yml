@@ -19,7 +19,7 @@ jobs:
       BUILD_HEV_PATH: "vendor/build_hev.sh"
       HEV_LIBS_PATH: "/app/src/main/jniLibs"
       XRAY_PATH: ".git/modules/vendor/xray-core-rust/HEAD"
-      BUILD_XRAY_PATH: "vendor/download_xray.sh"
+      DOWNLOAD_XRAY_PATH: "vendor/download_xray.sh"
       XRAY_LIBS_PATH: "/app/libs"
 
     steps:
@@ -89,30 +89,10 @@ jobs:
           path: ${{ github.workspace }}${{ env.HEV_LIBS_PATH }}
           key: hev-tun-${{ runner.os }}-${{ env.NDK_VERSION }}-${{ hashFiles(env.HEV_PATH) }}-${{ hashFiles(env.BUILD_HEV_PATH) }}
 
-      - name: Restore XRAY
-        id: cache-xray-restore
-        uses: actions/cache/restore@v4
-        with:
-          path: ${{ github.workspace }}${{ env.XRAY_LIBS_PATH }}
-          key: xray-${{ runner.os }}-${{ env.NDK_VERSION }}-${{ hashFiles(env.XRAY_PATH) }}-${{ hashFiles(env.BUILD_XRAY_PATH) }}
-
       - name: Download Xray
-        if: steps.cache-xray-restore.outputs.cache-hit != 'true'
         run: |
-          export ANDROID_HOME=/tmp/Android/sdk
-          export ANDROID_SDK_ROOT=$ANDROID_HOME
-          export ANDROID_NDK_HOME=/tmp/Android/sdk/ndk/$NDK_VERSION
-          export ANDROID_NDK=/tmp/Android/sdk/ndk/$NDK_VERSION
-          export OPENSSL_DIR=$(pkg-config --variable=prefix openssl)
-          chmod +x ${{ env.BUILD_XRAY_PATH }}
-          sh ${{ env.BUILD_XRAY_PATH }}
-
-      - name: Save Xray
-        if: steps.cache-xray-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ github.workspace }}${{ env.XRAY_LIBS_PATH }}
-          key: xray-${{ runner.os }}-${{ env.NDK_VERSION }}-${{ hashFiles(env.XRAY_PATH) }}-${{ hashFiles(env.BUILD_XRAY_PATH) }}
+          chmod +x ${{ env.DOWNLOAD_XRAY_PATH }}
+          sh ${{ env.DOWNLOAD_XRAY_PATH }}
 
       - name: Decode Keystore
         uses: timheuer/base64-to-file@v1
