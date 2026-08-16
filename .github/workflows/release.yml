@@ -1,9 +1,9 @@
-name: Android Full Build (v tags only)
+name: Build And Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [ published ]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           submodules: recursive
           fetch-depth: 0
@@ -111,12 +111,9 @@ jobs:
           -Pandroid.injected.signing.key.alias=${{ secrets.APP_KEY_ALIAS }} \
           -Pandroid.injected.signing.key.password=${{ secrets.APP_KEY_PASSWORD }}
 
-      - name: Create Release
+      - name: Upload APK to current Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          prerelease: true
           files: |
             app/build/outputs/apk/**/release/*.apk
         env:

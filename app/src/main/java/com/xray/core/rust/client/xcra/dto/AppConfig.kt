@@ -10,8 +10,7 @@ object AppConfig {
     const val APP_ISSUES_URL = "${APP_URL}/issues"
     const val APP_PRIVACY_POLICY = "$GITHUB_RAW_URL/$REPOSITORY/master/CR.md"
     const val APP_API_URL = "https://api.github.com/repos/$REPOSITORY/releases"
-    const val TG_CHANNEL_URL = "https://t.me/..."
-
+    const val TG_CHANNEL_URL = "https://t.me/xcra_vpn"
     const val DIR_ASSETS = "assets"
     const val DIR_BACKUPS = "backups"
     const val ALLOW_INSECURE_FORCE_SECURE = "Force Secure"
