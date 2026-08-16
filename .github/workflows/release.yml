@@ -1,4 +1,4 @@
-name: Build And Release
+name: Test Commit
 
 on:
   release:
@@ -71,7 +71,7 @@ jobs:
 
       - name: Restore Hev Tun
         id: cache-hev-tun-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: ${{ github.workspace }}${{ env.HEV_LIBS_PATH }}
           key: hev-tun-${{ steps.hev-commit.outputs.commit }}
@@ -89,7 +89,7 @@ jobs:
 
       - name: Save Hev Tun
         if: steps.cache-hev-tun-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: ${{ github.workspace }}${{ env.HEV_LIBS_PATH }}
           key: hev-tun-${{ steps.hev-commit.outputs.commit }}
@@ -117,7 +117,7 @@ jobs:
           -Pandroid.injected.signing.key.password=${{ secrets.APP_KEY_PASSWORD }}
 
       - name: Upload APK to current Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             app/build/outputs/apk/**/release/*.apk
