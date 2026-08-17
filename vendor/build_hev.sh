@@ -19,6 +19,7 @@ fi
 $ANDROID_NDK_HOME/ndk-build \
 NDK_PROJECT_PATH=$SCRIPT_DIR \
 APP_BUILD_SCRIPT=$SCRIPT_DIR/Android.mk \
+NDK_APPLICATION_MK=$SCRIPT_DIR/Application.mk \
 NDK_OUT=$SCRIPT_DIR/../build/ndk/obj \
 NDK_LIBS_OUT=$SCRIPT_DIR/../app/src/main/jniLibs
 )

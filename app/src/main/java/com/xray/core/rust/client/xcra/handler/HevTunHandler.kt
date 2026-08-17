@@ -12,16 +12,25 @@ class HevTunHandler {
         init {
             System.loadLibrary("hev-socks5-tunnel")
         }
+
+        @JvmStatic
+        @Suppress("FunctionName")
+        private external fun TProxyStartService(configPath: String, fd: Int): Boolean
+
+        @JvmStatic
+        @Suppress("FunctionName")
+        private external fun TProxyStopService(): Boolean
+
+        @JvmStatic
+        @Suppress("FunctionName")
+        private external fun TProxyIsRunning(): Boolean
+
+        @JvmStatic
+        @Suppress("FunctionName")
+        private external fun TProxyGetStats(): LongArray
+
     }
 
-    @Suppress("FunctionName")
-    private external fun TProxyStartService(configPath: String?, fd: Int)
-
-    @Suppress("FunctionName")
-    private external fun TProxyStopService()
-
-    @Suppress("FunctionName")
-    private external fun TProxyGetStats(): LongArray?
 
     private val sync = Any()
     private var isRunning = true
@@ -39,14 +48,12 @@ class HevTunHandler {
         App.logService("tun line yml:" + buildConfig())
         App.logService("tun fd:" + parcelFileDescriptor.fd)
 
-        TProxyStartService(path, parcelFileDescriptor.fd)
-
-        return true
+        return TProxyStartService(path, parcelFileDescriptor.fd)
     }
 
     fun stop() {
         synchronized(sync) {
-            if (isRunning) {
+            if (isRunning && TProxyIsRunning()) {
                 TProxyStopService()
             }
             isRunning = false
