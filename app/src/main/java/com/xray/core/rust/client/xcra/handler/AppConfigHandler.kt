@@ -237,7 +237,7 @@ object AppConfigHandler {
             val uuid = DatabaseHandler.encodeNodeItem("", config, false)
 
             if (removedNode != null &&
-                config.address == removedNode.address && config.port == removedNode.port
+                config["address"] == removedNode["address"] && config["port"] == removedNode["port"]
             ) {
                 DatabaseHandler.setSelectNodeUUID(uuid)
             }

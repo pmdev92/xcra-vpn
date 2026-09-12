@@ -99,6 +99,10 @@ data class Outbound(
         var obfsType: String? = null,
         @SerializedName("obfs_password")
         var obfsPassword: String? = null,
+        @SerializedName("gecko_min_packet_len")
+        var geckoMinPacketLen: Int? = null,
+        @SerializedName("gecko_max_packet_len")
+        var geckoMaxPacketLen: Int? = null,
         @SerializedName("hop_ports")
         var hopPorts: String? = null,
         @SerializedName("hop_intervals")

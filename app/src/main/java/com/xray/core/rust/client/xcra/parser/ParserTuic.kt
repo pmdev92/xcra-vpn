@@ -21,27 +21,27 @@ object ParserTuic : Parser() {
         val config = NodeItem.create(ConfigType.TUIC)
 
         val uri = URI(Utils.fixIllegalUrl(str))
-        config.remarks =
+        config["remarks"] =
             Utils.urlDecode(uri.fragment.orEmpty()).let { it.ifEmpty { "none" } }
-        config.address = uri.idnHost
-        config.port = uri.port.toString()
+        config["address"] = uri.idnHost
+        config["port"] = uri.port.toString()
         val parts = uri.userInfo.split(":", limit = 2)
         val uuid = parts.getOrNull(0)
         val password = parts.getOrNull(1)
         if (uuid == null || password == null) {
             return null
         }
-        config.password = password
-        config.uuid = uuid
-        config.security = AppConfig.TLS
+        config["password"] = password
+        config["uuid"] = uuid
+        config["security"] = AppConfig.TLS
         if (!uri.rawQuery.isNullOrEmpty()) {
             val queryParam = getQueryParam(uri)
             getTransportFormQuery(config, queryParam)
 
-            config.security = queryParam["security"] ?: AppConfig.TLS
-            config.tuicCongestionControl = queryParam["congestion_control"]
-            config.tuicHeartbeat = queryParam["heartbeat"]
-            config.tuicUdpRelayMode = queryParam["udp_relay_mode"]
+            config["security"] = queryParam["security"] ?: AppConfig.TLS
+            config["tuic_congestion_control"] = queryParam["congestion_control"]
+            config["tuic_heartbeat"] = queryParam["heartbeat"]
+            config["tuic_udp_relay_mode"] = queryParam["udp_relay_mode"]
         }
         return config
     }
@@ -54,22 +54,22 @@ object ParserTuic : Parser() {
      */
     fun toUri(config: NodeItem): String {
         val dicQuery = HashMap<String, String>()
-        config.security.let { if (it != null) dicQuery["security"] = it }
-        config.sni.let { if (it.isNotNullEmpty()) dicQuery["sni"] = it.orEmpty() }
-        config.alpn.let { if (it.isNotNullEmpty()) dicQuery["alpn"] = it.orEmpty() }
-        config.tuicCongestionControl.let {
+        config["security"].let { if (it != null) dicQuery["security"] = it }
+        config["sni"].let { if (it.isNotNullEmpty()) dicQuery["sni"] = it.orEmpty() }
+        config["alpn"].let { if (it.isNotNullEmpty()) dicQuery["alpn"] = it.orEmpty() }
+        config["tuic_congestion_control"].let {
             if (it.isNotNullEmpty()) dicQuery["congestion_control"] = it.orEmpty()
         }
-        config.tuicHeartbeat.let {
+        config["tuic_heartbeat"].let {
             if (it.isNotNullEmpty()) dicQuery["heartbeat"] = it.orEmpty()
         }
-        config.tuicUdpRelayMode.let {
+        config["tuic_udp_relay_mode"].let {
             if (it.isNotNullEmpty()) dicQuery["udp_relay_mode"] = it.orEmpty()
         }
-        config.insecure.let { dicQuery["insecure"] = if (it == true) "1" else "0" }
+        config["insecure"].let { dicQuery["insecure"] = if (it == "1") "1" else "0" }
 
 
-        return toUri(config, config.password, dicQuery)
+        return toUri(config, config["password"], dicQuery)
     }
 
     /**
@@ -85,13 +85,13 @@ object ParserTuic : Parser() {
             outbound.settings = Outbound.TuicSettings(
                 address = nodeItem.addressConfig,
                 port = it,
-                password = nodeItem.password,
-                uuid = nodeItem.uuid,
-                heartbeat = nodeItem.tuicHeartbeat,
-                congestionControl = nodeItem.tuicCongestionControl,
-                udpRelayMode = nodeItem.tuicUdpRelayMode,
+                password = nodeItem["password"],
+                uuid = nodeItem["uuid"],
+                congestionControl = nodeItem["tuic_congestion_control"],
+                heartbeat = nodeItem["tuic_heartbeat"],
+                udpRelayMode = nodeItem["tuic_udp_relay_mode"],
                 tlsSettings = Outbound.TlsSettings(
-                    serverName = nodeItem.sni,
+                    serverName = nodeItem["sni"],
                     verify = !allowInsecure
                 ),
             )

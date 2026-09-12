@@ -104,7 +104,7 @@ private fun Screen(
             title = stringResource(R.string.group_lab_title)
         )
         XcraEditTextField(
-            titleResId = R.string.group_lab_remarks,
+            title = stringResource(R.string.group_lab_remarks),
             value = model.remarks,
             isError = model.remarksError,
             onValueChange = {
@@ -112,7 +112,7 @@ private fun Screen(
             },
         )
         XcraEditTextField(
-            titleResId = R.string.group_lab_url,
+            title = stringResource(R.string.group_lab_url),
             value = model.url,
             isError = model.urlError,
             onValueChange = {

@@ -25,24 +25,25 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.xray.core.rust.client.xcra.R
+import com.xray.core.rust.client.xcra.config.BooleanDropDownItem
+import com.xray.core.rust.client.xcra.config.DividerItem
+import com.xray.core.rust.client.xcra.config.DropDownItem
+import com.xray.core.rust.client.xcra.config.IntegerItem
+import com.xray.core.rust.client.xcra.config.TextItem
+import com.xray.core.rust.client.xcra.config.TitleItem
 import com.xray.core.rust.client.xcra.enums.ConfigType
 import com.xray.core.rust.client.xcra.handler.DatabaseHandler
 import com.xray.core.rust.client.xcra.ui.component.XcraDividerField
 import com.xray.core.rust.client.xcra.ui.component.XcraDropDown
 import com.xray.core.rust.client.xcra.ui.component.XcraEditTextField
 import com.xray.core.rust.client.xcra.ui.component.XcraTitleTextField
-import com.xray.core.rust.client.xcra.ui.model.DividerItem
-import com.xray.core.rust.client.xcra.ui.model.DropField
-import com.xray.core.rust.client.xcra.ui.model.IntegerField
+
 import com.xray.core.rust.client.xcra.ui.model.NodeViewModel
 import com.xray.core.rust.client.xcra.ui.model.NodeViewModelAccessor
-import com.xray.core.rust.client.xcra.ui.model.TextField
-import com.xray.core.rust.client.xcra.ui.model.TitleItem
 import com.xray.core.rust.client.xcra.ui.theme.XcraVPNTheme
 
 class NodeActivity : ComponentActivity() {
@@ -135,35 +136,46 @@ fun NodeScreen(
                     title = entry.title,
                 )
             }
-            if (entry is TextField) {
+            if (entry is TextItem) {
                 XcraEditTextField(
-                    titleResId = entry.titleResId,
-                    value = entry.value,
-                    onValueChange = { model.updateField(entry, it) },
+                    title = entry.title,
+                    value = entry.getDisplayValue(),
+                    onValueChange = { model.updateItemValue(entry, it) },
                     isError = entry.isError,
+                    helperText = entry.helperText,
+                    errorMessage = entry.errorMessage,
                 )
             }
-            if (entry is IntegerField) {
+            if (entry is IntegerItem) {
                 XcraEditTextField(
-                    titleResId = entry.titleResId,
-                    value = entry.value,
-                    onValueChange = { model.updateField(entry, it) },
+                    title = entry.title,
+                    value = entry.getDisplayValue(),
+                    onValueChange = { model.updateItemValue(entry, it) },
                     isError = entry.isError,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    helperText = entry.helperText,
+                    errorMessage = entry.errorMessage,
                 )
             }
-            if (entry is DropField) {
-                val items = stringArrayResource(id = entry.itemsResId)
+            if (entry is DropDownItem) {
                 XcraDropDown(
-                    titleResId = entry.titleResId,
-                    items = items,
-                    selected = entry.value,
-                    onValueChange = { model.updateField(entry, it) },
+                    title = entry.title,
+                    items = entry.items,
+                    selected = entry.getDisplayValue(),
+                    onValueChange = { model.updateItemValue(entry, it) },
                     isCapitalize = entry.isCapitalize
                 )
             }
-            if (index != fields.lastIndex) {
-                Spacer(modifier = Modifier.height(8.dp))
+            if (entry is BooleanDropDownItem) {
+                XcraDropDown(
+                    title = entry.title,
+                    items = entry.items,
+                    selected = entry.getDisplayValue(),
+                    onValueChange = { model.updateItemValue(entry, it) },
+                )
+            }
+            if (index != fields.lastIndex && entry !is DividerItem && entry !is TitleItem) {
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
     }

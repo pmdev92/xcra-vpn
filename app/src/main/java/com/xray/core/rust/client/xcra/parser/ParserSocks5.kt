@@ -24,10 +24,10 @@ object ParserSocks5 : Parser() {
         if (uri.idnHost.isEmpty()) return null
         if (uri.port <= 0) return null
 
-        config.remarks =
+        config["remarks"] =
             Utils.urlDecode(uri.fragment.orEmpty()).let { it.ifEmpty { "none" } }
-        config.address = uri.idnHost
-        config.port = uri.port.toString()
+        config["address"] = uri.idnHost
+        config["port"] = uri.port.toString()
 
         val queryParam = getQueryParam(uri)
         getTransportFormQuery(config, queryParam)
@@ -59,8 +59,8 @@ object ParserSocks5 : Parser() {
             outbound.settings = Outbound.Socks5Setting(
                 address = nodeItem.addressConfig,
                 port = it,
-                username = nodeItem.username,
-                password = nodeItem.password,
+                username = nodeItem["username"],
+                password = nodeItem["password"],
             )
             populateTransportSettings(outbound, nodeItem)
             populateSecuritySettings(outbound, nodeItem)

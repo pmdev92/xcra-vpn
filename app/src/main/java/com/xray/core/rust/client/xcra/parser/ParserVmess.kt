@@ -50,33 +50,34 @@ object ParserVmess : Parser() {
             return null
         }
 
-        config.remarks = vmess.ps
-        config.address = vmess.add
-        config.port = vmess.port
-        config.uuid = vmess.id
-        config.vmessSecurity =
+        config["remarks"] = vmess.ps
+        config["address"] = vmess.add
+        config["port"] = vmess.port
+        config["uuid"] = vmess.id
+        config["vmess_security"] =
             if (TextUtils.isEmpty(vmess.scy)) AppConfig.DEFAULT_VMESS_SECURITY else vmess.scy
 
-        config.transport = vmess.net
-        config.headerType = vmess.type
-        config.host = vmess.host
-        config.path = vmess.path
+        config["transport"] = vmess.net
+        config["header_type"] = vmess.type
+        config["host"] = vmess.host
+        config["path"] = vmess.path
 
-        when (TransportType.fromString(config.transport)) {
+        when (TransportType.fromString(config["transport"])) {
             TransportType.GRPC -> {
-                config.serviceName = vmess.path
+                config["service_name"] = vmess.path
             }
 
             else -> {}
         }
 
-        config.security = vmess.tls
-        config.sni = vmess.sni
-        config.alpn = vmess.alpn
-        config.insecure = when (vmess.insecure) {
-            "1" -> true
-            "0" -> false
-            else -> allowInsecure
+        config["security"] = vmess.tls
+        config["sni"] = vmess.sni
+        config["alpn"] = vmess.alpn
+        config["insecure"] = when {
+            vmess.insecure == "1" -> "1"
+            vmess.insecure == "0" -> "0"
+            allowInsecure -> "1"
+            else -> "0"
         }
         return config
     }
@@ -95,12 +96,12 @@ object ParserVmess : Parser() {
         val queryParam = getQueryParam(uri)
 
 
-        config.remarks =
+        config["remarks"] =
             Utils.urlDecode(uri.fragment.orEmpty()).let { it.ifEmpty { "none" } }
-        config.address = uri.idnHost
-        config.port = uri.port.toString()
-        config.uuid = uri.userInfo
-        config.vmessSecurity = queryParam["security"] ?: "auto"
+        config["address"] = uri.idnHost
+        config["port"] = uri.port.toString()
+        config["uuid"] = uri.userInfo
+        config["vmess_security"] = queryParam["security"] ?: "auto"
         getTransportFormQuery(config, queryParam)
         return config
     }
@@ -115,30 +116,30 @@ object ParserVmess : Parser() {
     fun toUri(config: NodeItem): String {
         val vmess = Vmess()
         vmess.v = "2"
-        vmess.ps = config.remarks
-        vmess.add = config.address.orEmpty()
-        vmess.port = config.port.orEmpty()
-        vmess.id = config.uuid.orEmpty()
-        vmess.scy = config.vmessSecurity.orEmpty()
+        vmess.ps = config["remarks"].orEmpty()
+        vmess.add = config["address"].orEmpty()
+        vmess.port = config["port"].orEmpty()
+        vmess.id = config["uuid"].orEmpty()
+        vmess.scy = config["vmess_security"].orEmpty()
         vmess.aid = "0"
 
-        vmess.net = config.transport.orEmpty()
-        vmess.type = config.headerType.orEmpty()
-        when (TransportType.fromString(config.transport)) {
+        vmess.net = config["transport"].orEmpty()
+        vmess.type = config["header_type"].orEmpty()
+        when (TransportType.fromString(config["transport"])) {
             TransportType.GRPC -> {
-                vmess.path = config.serviceName.orEmpty()
+                vmess.path = config["service_name"].orEmpty()
             }
 
             else -> {}
         }
-        config.host.let { if (it.isNotNullEmpty()) vmess.host = it.orEmpty() }
-        config.path.let { if (it.isNotNullEmpty()) vmess.path = it.orEmpty() }
-        vmess.tls = config.security.orEmpty()
-        vmess.sni = config.sni.orEmpty()
-        vmess.alpn = config.alpn.orEmpty()
-        vmess.insecure = when (config.insecure) {
-            true -> "1"
-            false -> "0"
+        config["host"].let { if (it.isNotNullEmpty()) vmess.host = it.orEmpty() }
+        config["path"].let { if (it.isNotNullEmpty()) vmess.path = it.orEmpty() }
+        vmess.tls = config["security"].orEmpty()
+        vmess.sni = config["sni"].orEmpty()
+        vmess.alpn = config["alpn"].orEmpty()
+        vmess.insecure = when (config["insecure"]) {
+            "1" -> "1"
+            "0" -> "0"
             else -> ""
         }
 
@@ -158,8 +159,8 @@ object ParserVmess : Parser() {
             outbound.settings = Outbound.VmessSetting(
                 address = nodeItem.addressConfig,
                 port = it,
-                id = nodeItem.uuid,
-                security = nodeItem.vmessSecurity
+                id = nodeItem["uuid"],
+                security = nodeItem["vmess_security"]
             )
             populateTransportSettings(outbound, nodeItem)
             populateSecuritySettings(outbound, nodeItem)

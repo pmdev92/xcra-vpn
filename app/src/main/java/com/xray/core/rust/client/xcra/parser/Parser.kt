@@ -36,11 +36,11 @@ open class Parser {
         val url = String.format(
             "%s@%s:%s",
             Utils.urlEncode(userInfo ?: ""),
-            Utils.getIpv6Address(HttpUtil.toIdnDomain(config.address.orEmpty())),
-            config.port
+            Utils.getIpv6Address(HttpUtil.toIdnDomain(config["address"].orEmpty())),
+            config["port"]
         )
 
-        return "${url}${query}#${Utils.urlEncode(config.remarks)}"
+        return "${url}${query}#${Utils.urlEncode(config["remarks"].orEmpty())}"
     }
 
     /**
@@ -59,37 +59,50 @@ open class Parser {
      *
      * @param config the NodeItem object to populate
      * @param queryParam the query parameters to use for populating the NodeItem
-     * @param allowInsecure whether to allow insecure connections
      */
     fun getTransportFormQuery(
         config: NodeItem,
         queryParam: Map<String, String>,
     ) {
-        config.transport = queryParam["type"] ?: TransportType.TCP.type
-        config.headerType = queryParam["headerType"]
-        config.host = queryParam["host"]
-        config.path = queryParam["path"]
+        config["transport"] = queryParam["type"] ?: TransportType.TCP.type
+        config["header_type"] = queryParam["headerType"]
+        config["host"] = queryParam["host"]
+        config["path"] = queryParam["path"]
 
-        config.serviceName = queryParam["serviceName"]
-        config.xhttpMode = queryParam["mode"]
+        config["service_name"] = queryParam["serviceName"]
+        config["x_http_mode"] = queryParam["mode"]
 
-        config.security = queryParam["security"]
-        if (config.security != AppConfig.TLS && config.security != AppConfig.REALITY) {
-            config.security = null
+        config["security"] = queryParam["security"]
+        if (config["security"] != AppConfig.TLS && config["security"] != AppConfig.REALITY) {
+            config["security"] = null
         }
         // Support multiple possible query keys for allowInsecure like the C# implementation
-        val allowInsecureKeys = arrayOf("insecure", "allowInsecure", "allow_insecure")
-        config.insecure = when {
-            allowInsecureKeys.any { queryParam[it] == "1" } -> true
-            allowInsecureKeys.any { queryParam[it] == "0" } -> false
-            else -> {
-                null
-            }
+        val allowInsecureKeys = arrayOf(
+            "insecure",
+            "allowinsecure",
+            "allow_insecure"
+        )
+
+        config["insecure"] = when {
+            allowInsecureKeys.any { key ->
+                queryParam.entries.any { (paramKey, value) ->
+                    paramKey.equals(key, ignoreCase = true) && value == "1"
+                }
+            } -> "1"
+
+            allowInsecureKeys.any { key ->
+                queryParam.entries.any { (paramKey, value) ->
+                    paramKey.equals(key, ignoreCase = true) && value == "0"
+                }
+            } -> "0"
+
+            else -> null
+
         }
-        config.sni = queryParam["sni"]
-        config.alpn = queryParam["alpn"]
-        config.publicKey = queryParam["pbk"]
-        config.shortId = queryParam["sid"]
+        config["sni"] = queryParam["sni"]
+        config["alpn"] = queryParam["alpn"]
+        config["public_key"] = queryParam["pbk"]
+        config["short_id"] = queryParam["sid"]
     }
 
     /**
@@ -100,46 +113,49 @@ open class Parser {
      */
     fun getQueryTransportDic(config: NodeItem): HashMap<String, String> {
         val dicQuery = HashMap<String, String>()
-        dicQuery["security"] = config.security?.ifEmpty { "none" }.orEmpty()
-        config.sni.let { if (it.isNotNullEmpty()) dicQuery["sni"] = it.orEmpty() }
-        config.alpn.let { if (it.isNotNullEmpty()) dicQuery["alpn"] = it.orEmpty() }
-        config.publicKey.let { if (it.isNotNullEmpty()) dicQuery["pbk"] = it.orEmpty() }
-        config.shortId.let { if (it.isNotNullEmpty()) dicQuery["sid"] = it.orEmpty() }
+        dicQuery["security"] = config["security"]?.ifEmpty { "none" }.orEmpty()
+        config["sni"].let { if (it.isNotNullEmpty()) dicQuery["sni"] = it.orEmpty() }
+        config["alpn"].let { if (it.isNotNullEmpty()) dicQuery["alpn"] = it.orEmpty() }
+        config["public_key"].let { if (it.isNotNullEmpty()) dicQuery["pbk"] = it.orEmpty() }
+        config["short_id"].let { if (it.isNotNullEmpty()) dicQuery["sid"] = it.orEmpty() }
         // Add two keys for compatibility: "insecure" and "allowInsecure"
-        if (config.security == AppConfig.TLS) {
-            val insecureFlag = if (config.insecure == true) "1" else "0"
+        if (config["security"] == AppConfig.TLS) {
+            val insecureFlag = if (config["insecure"] == "1") "1" else "0"
             dicQuery["insecure"] = insecureFlag
             dicQuery["allowInsecure"] = insecureFlag
         }
 
-        val networkType = TransportType.fromString(config.transport)
+        val networkType = TransportType.fromString(config["transport"])
         dicQuery["type"] = networkType.type
         when (networkType) {
             TCP -> {
-                dicQuery["headerType"] = config.headerType?.ifEmpty { "none" }.orEmpty()
-                config.host.let { if (it.isNotNullEmpty()) dicQuery["host"] = it.orEmpty() }
+                dicQuery["headerType"] = config["header_type"]?.ifEmpty { "none" }.orEmpty()
+                config["host"].let { if (it.isNotNullEmpty()) dicQuery["host"] = it.orEmpty() }
+                config["path"].let { if (it.isNotNullEmpty()) dicQuery["path"] = it.orEmpty() }
             }
 
 
             WS, HTTP_UPGRADE -> {
-                config.host.let { if (it.isNotNullEmpty()) dicQuery["host"] = it.orEmpty() }
-                config.path.let { if (it.isNotNullEmpty()) dicQuery["path"] = it.orEmpty() }
+                config["host"].let { if (it.isNotNullEmpty()) dicQuery["host"] = it.orEmpty() }
+                config["path"].let { if (it.isNotNullEmpty()) dicQuery["path"] = it.orEmpty() }
             }
 
             XHTTP -> {
-                config.host.let { if (it.isNotNullEmpty()) dicQuery["host"] = it.orEmpty() }
-                config.path.let { if (it.isNotNullEmpty()) dicQuery["path"] = it.orEmpty() }
-                config.xhttpMode.let { if (it.isNotNullEmpty()) dicQuery["mode"] = it.orEmpty() }
+                config["host"].let { if (it.isNotNullEmpty()) dicQuery["host"] = it.orEmpty() }
+                config["path"].let { if (it.isNotNullEmpty()) dicQuery["path"] = it.orEmpty() }
+                config["x_http_mode"].let {
+                    if (it.isNotNullEmpty()) dicQuery["mode"] = it.orEmpty()
+                }
             }
 
             H2 -> {
                 dicQuery["type"] = "http"
-                config.host.let { if (it.isNotNullEmpty()) dicQuery["host"] = it.orEmpty() }
-                config.path.let { if (it.isNotNullEmpty()) dicQuery["path"] = it.orEmpty() }
+                config["host"].let { if (it.isNotNullEmpty()) dicQuery["host"] = it.orEmpty() }
+                config["path"].let { if (it.isNotNullEmpty()) dicQuery["path"] = it.orEmpty() }
             }
 
             GRPC -> {
-                config.serviceName.let {
+                config["service_name"].let {
                     if (it.isNotNullEmpty()) dicQuery["serviceName"] = it.orEmpty()
                 }
             }
@@ -158,12 +174,12 @@ open class Parser {
      * @return The Server Name Indication (SNI) value to use, or null if not applicable
      */
     fun populateTransportSettings(outbound: Outbound, nodeItem: NodeItem) {
-        val transport = nodeItem.transport.orEmpty()
-        val headerType = nodeItem.headerType
-        val host = nodeItem.host
-        val path = nodeItem.path
-        val serviceName = nodeItem.serviceName
-        val xhttpMode = nodeItem.xhttpMode
+        val transport = nodeItem["transport"].orEmpty()
+        val headerType = nodeItem["header_type"]
+        val host = nodeItem["host"]
+        val path = nodeItem["path"]
+        val serviceName = nodeItem["service_name"]
+        val xhttpMode = nodeItem["x_http_mode"]
 
         val streamSettings = if (outbound.streamSettings != null) {
             outbound.streamSettings!!
@@ -243,15 +259,15 @@ open class Parser {
         outbound: Outbound,
         nodeItem: NodeItem,
     ) {
-        val security = nodeItem.security.orEmpty()
+        val security = nodeItem["security"].orEmpty()
         val allowInsecure = decideAllowInsecure(nodeItem)
-        val sni = nodeItem.sni
+        val sni = nodeItem["sni"]
 
-        val alpns = nodeItem.alpn
+        val alpns = nodeItem["alpn"]
         val alpnsArray = if (alpns.isNullOrEmpty()) null else alpns.split(",").map { it.trim() }
             .filter { it.isNotEmpty() }
-        val publicKey = nodeItem.publicKey
-        val shortId = nodeItem.shortId
+        val publicKey = nodeItem["public_key"]
+        val shortId = nodeItem["short_id"]
 
         val streamSettings = if (outbound.streamSettings != null) {
             outbound.streamSettings!!
@@ -289,7 +305,7 @@ open class Parser {
         val allowInsecure = AllowInsecure.fromString(allowInsecureStr)
         return when (allowInsecure) {
             AllowInsecure.FOLLOW_CONFIGURATION -> {
-                nodeItem.insecure == true
+                nodeItem["insecure"] == "1"
             }
 
             AllowInsecure.FORCE_INSECURE -> {

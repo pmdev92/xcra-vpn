@@ -113,7 +113,7 @@ private fun Screen(
             .padding(8.dp)
     ) {
         XcraEditTextField(
-            titleResId = R.string.rule_lab_remarks,
+            title = stringResource(R.string.rule_lab_remarks),
             value = model.remarks,
             isError = model.remarksError,
             onValueChange = {
@@ -130,7 +130,7 @@ private fun Screen(
         )
 
         XcraEditTextField(
-            titleResId = R.string.rule_lab_domain,
+            title = stringResource(R.string.rule_lab_domain),
             value = model.domain,
             isError = model.domainError,
             onValueChange = {
@@ -141,7 +141,7 @@ private fun Screen(
         )
 
         XcraEditTextField(
-            titleResId = R.string.rule_lab_ip,
+            title = stringResource(R.string.rule_lab_ip),
             value = model.ip,
             isError = model.ipError,
             onValueChange = {
@@ -152,7 +152,7 @@ private fun Screen(
         )
 
         XcraEditTextField(
-            titleResId = R.string.rule_lab_port,
+            title = stringResource(R.string.rule_lab_port),
             value = model.port,
             isError = model.portError,
             onValueChange = {
@@ -163,10 +163,10 @@ private fun Screen(
         )
 
 
-        var itemsProtocols = stringArrayResource(id = R.array.rule_lab_protocols)
+        var itemsProtocols = stringArrayResource(id = R.array.rule_lab_protocols).asList()
         itemsProtocols = powerSet(itemsProtocols)
         XcraDropDown(
-            titleResId = R.string.rule_lab_protocol,
+            title = stringResource(R.string.rule_lab_protocol),
             items = itemsProtocols,
             selected = model.protocol,
             onValueChange = {
@@ -174,10 +174,10 @@ private fun Screen(
             }
         )
 
-        var itemsNetworks = stringArrayResource(id = R.array.rule_lab_networks)
+        var itemsNetworks = stringArrayResource(id = R.array.rule_lab_networks).asList()
         itemsNetworks = powerSet(itemsNetworks)
         XcraDropDown(
-            titleResId = R.string.rule_lab_network,
+            title = stringResource(R.string.rule_lab_network),
             items = itemsNetworks,
             selected = model.network,
             onValueChange = {
@@ -185,9 +185,9 @@ private fun Screen(
             }
         )
 
-        val itemsOutbounds = stringArrayResource(id = R.array.rule_lab_outbounds)
+        val itemsOutbounds = stringArrayResource(id = R.array.rule_lab_outbounds).asList()
         XcraDropDown(
-            titleResId = R.string.rule_lab_outbound,
+            title = stringResource(R.string.rule_lab_outbound),
             items = itemsOutbounds,
             selected = model.outbound,
             onValueChange = {
@@ -270,9 +270,9 @@ private fun DeleteDialog(
 }
 
 fun powerSet(
-    list: Array<String>,
+    list: List<String>,
     separator: String = " | "
-): Array<String> {
+): List<String> {
 
     val result = ArrayList<String>()
     val n = list.size
@@ -298,5 +298,5 @@ fun powerSet(
         }
     }
 
-    return result.toTypedArray()
+    return result.toTypedArray().asList()
 }

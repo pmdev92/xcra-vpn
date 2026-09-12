@@ -28,10 +28,10 @@ object ParserShadowSocks : Parser() {
 
 
 
-        config.remarks =
+        config["remarks"] =
             Utils.urlDecode(uri.fragment.orEmpty()).let { if (it.isEmpty()) "none" else it }
-        config.address = uri.idnHost
-        config.port = uri.port.toString()
+        config["address"] = uri.idnHost
+        config["port"] = uri.port.toString()
 
         val result = if (uri.userInfo.contains(":")) {
             uri.userInfo.split(":", limit = 2)
@@ -39,8 +39,8 @@ object ParserShadowSocks : Parser() {
             Base64Util.decode(uri.userInfo).split(":", limit = 2)
         }
         if (result.count() == 2) {
-            config.password = result.last()
-            config.shadowSocksMethod = result.first()
+            config["password"] = result.last()
+            config["shadow_socks_method"] = result.first()
         }
 
 
@@ -59,7 +59,7 @@ object ParserShadowSocks : Parser() {
      */
     fun toUri(config: NodeItem): String {
         val dicQuery = getQueryTransportDic(config)
-        val pw = "${config.shadowSocksMethod}:${config.password}"
+        val pw = "${config["shadow_socks_method"]}:${config["password"]}"
 
         return toUri(config, Base64Util.encode(pw, true), dicQuery)
     }
@@ -76,8 +76,8 @@ object ParserShadowSocks : Parser() {
             outbound.settings = Outbound.ShadowSocksSetting(
                 address = nodeItem.addressConfig,
                 port = it,
-                password = nodeItem.password,
-                method = nodeItem.shadowSocksMethod,
+                password = nodeItem["password"],
+                method = nodeItem["shadow_socks_method"],
             )
             populateTransportSettings(outbound, nodeItem)
             populateSecuritySettings(outbound, nodeItem)

@@ -115,7 +115,7 @@ private fun Screen(
             .padding(8.dp)
     ) {
         XcraEditTextField(
-            titleResId = R.string.asset_lab_remarks,
+            title = stringResource(R.string.asset_lab_remarks),
             value = model.remarks,
             isError = model.remarksError,
             onValueChange = {
@@ -123,7 +123,7 @@ private fun Screen(
             },
         )
         XcraEditTextField(
-            titleResId = R.string.asset_lab_url,
+            title = stringResource(R.string.asset_lab_url),
             value = model.url,
             isError = model.urlError,
             onValueChange = {

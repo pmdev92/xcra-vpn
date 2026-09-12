@@ -33,6 +33,7 @@
     <string name="node_lab_security_alpn">Alpn</string>
     <string name="node_lab_tuic_congestion_control">Congestion control</string>
     <string name="node_lab_tuic_udp_relay_mode">Udp relay mode</string>
+    <string name="node_lab_tuic_heartbeat">Heartbeat</string>
     <string name="node_lab_tcp_header_type">Header type</string>
     <string name="node_lab_xhttp_mode">Mode</string>
     <string name="node_lab_host">Host</string>
@@ -77,6 +78,7 @@
     <string name="toast_decoding_failed">Decoding failed</string>
     <string name="toast_invalid_url">Invalid URL</string>
     <string name="toast_asset_copy_failed">File copy failed, please use File Manager</string>
+    <string name="error_invalid_field">The %s field is invalid.</string>
 
     <string name="content_description_qr_code_of_node">QR code of config</string>
 
@@ -185,4 +187,10 @@
     <string name="rules_import_from_qrcode">Import ruleset from QRcode</string>
     <string name="rules_export_to_clipboard">Export ruleset to clipboard</string>
     <string name="rules_import_confirm">Existing rulesets will be deleted, are you sure to continue?</string>
+    <string name="node_lab_obfs_type">Obfs Type</string>
+    <string name="node_lab_obfs_password">Obfs Password</string>
+    <string name="node_lab_min_packet_len">Gecko Min Packet Length</string>
+    <string name="node_lab_max_packet_len">Gecko Max Packet Length</string>
+    <string name="node_lab_port_hopping">Port Hopping</string>
+    <string name="node_lab_port_hopping_interval">Port Hopping Interval</string>
 </resources>

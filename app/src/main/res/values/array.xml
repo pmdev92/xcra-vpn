@@ -6,12 +6,7 @@
         <item>xtls-rprx-vision</item>
         <item>xtls-rprx-vision-udp443</item>
     </string-array>
-
-    <string-array name="bools" translatable="false">
-        <item></item>
-        <item>true</item>
-        <item>false</item>
-    </string-array>
+    
 
     <string-array name="vmess_securities" translatable="false">
         <item>auto</item>
@@ -53,6 +48,12 @@
         <item>quic</item>
     </string-array>
 
+    <string-array name="hysteria2_obfs_types" translatable="false">
+        <item>none</item>
+        <item>salamander</item>
+        <item>gecko</item>
+    </string-array>
+
     <string-array name="xhttp_mode" translatable="false">
         <item>auto</item>
         <item>packet-up</item>
@@ -61,7 +62,6 @@
     </string-array>
 
     <string-array name="transports" translatable="false">
-        <item></item>
         <item>Tcp</item>
         <item>Websocket</item>
         <item>Httpupgrade</item>

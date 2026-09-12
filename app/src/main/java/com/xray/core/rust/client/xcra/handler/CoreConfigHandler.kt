@@ -65,7 +65,7 @@ object CoreConfigHandler {
         nodeItem: NodeItem
     ): ConfigResult {
         val result = ConfigResult(false)
-        val address = nodeItem.address ?: return result
+        val address = nodeItem["address"] ?: return result
 
         if (!IpUtil.isPureIpAddress(address)) {
             if (!IpUtil.isDomainName(address)) {
@@ -110,7 +110,7 @@ object CoreConfigHandler {
     ): ConfigResult {
         val result = ConfigResult(false)
 
-        val address = nodeItem.address ?: return result
+        val address = nodeItem["address"] ?: return result
         if (!IpUtil.isPureIpAddress(address)) {
             if (!Utils.isValidUrl(address)) {
                 App.log("$address is an invalid ip or domain")

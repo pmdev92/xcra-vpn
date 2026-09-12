@@ -108,7 +108,9 @@ class XcraVpnService : VpnService() {
             nodeItem = config.nodeItem
             xrayCoreHandler = XrayCoreHandler(this)
             xrayCoreHandler?.start(config.json)
-            parcelFileDescriptor = AndroidVpnHandler.start(Builder(), nodeItem?.remarks.orEmpty())
+
+            parcelFileDescriptor =
+                AndroidVpnHandler.start(Builder(), nodeItem?.get("remarks").orEmpty())
             hevTunHandler = HevTunHandler()
             hevTunHandler?.start(this, parcelFileDescriptor!!)
             setConnectionState(VpnState.CONNECTED)
@@ -137,7 +139,7 @@ class XcraVpnService : VpnService() {
     @Synchronized
     fun setConnectionState(vpnState: VpnState) {
         if (vpnState == VpnState.CONNECTED && this.vpnState != VpnState.CONNECTED) {
-            val message = nodeItem?.remarks ?: "Connected"
+            val message = nodeItem?.get("remarks") ?: "Connected"
             NotificationHandler.sendNotificationConnected(this, message)
         } else if (vpnState == VpnState.DISCONNECTED && this.vpnState != VpnState.DISCONNECTED) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

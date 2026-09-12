@@ -20,6 +20,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,10 +32,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.xray.core.rust.client.xcra.extension.isNotNullEmpty
@@ -74,13 +73,15 @@ fun XcraTitleTextField(
 
 @Composable
 fun XcraEditTextField(
-    titleResId: Int,
+    title: String,
     value: String,
     isError: Boolean,
     onValueChange: (String) -> Unit,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     large: Boolean = false,
     placeholder: String? = null,
+    helperText: String? = null,
+    errorMessage: String? = null,
 ) {
     var minLines = 1
     var maxLines = 1
@@ -90,6 +91,10 @@ fun XcraEditTextField(
         maxLines = 4
         singleLine = false
     }
+
+    val isHelperVisible = !helperText.isNullOrEmpty() && !isError
+    val isErrorVisible = isError && !errorMessage.isNullOrEmpty()
+
     Column(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
             placeholder = {
@@ -97,8 +102,7 @@ fun XcraEditTextField(
                     Text(
                         text = placeholder,
                         style = MaterialTheme.typography.labelSmall,
-
-                        color = Color.LightGray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             },
@@ -107,7 +111,7 @@ fun XcraEditTextField(
             modifier = Modifier.fillMaxWidth(),
             label = {
                 Text(
-                    text = stringResource(id = titleResId),
+                    text = title,
                     style = MaterialTheme.typography.labelSmall,
                 )
             },
@@ -116,14 +120,41 @@ fun XcraEditTextField(
             maxLines = maxLines,
             keyboardOptions = keyboardOptions,
             isError = isError,
+            supportingText = {
+                if (isHelperVisible) {
+                    Text(
+                        text = helperText,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                } else if (isErrorVisible) {
+                    Text(
+                        text = errorMessage,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                errorBorderColor = MaterialTheme.colorScheme.error,
+                errorLeadingIconColor = MaterialTheme.colorScheme.error,
+                errorTrailingIconColor = MaterialTheme.colorScheme.error,
+                errorSupportingTextColor = MaterialTheme.colorScheme.error,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
         )
     }
 }
 
 @Composable
 fun XcraDropDown(
-    titleResId: Int,
-    items: Array<String>,
+    title: String,
+    items: List<String>,
     selected: String,
     onValueChange: (String) -> Unit,
     isCapitalize: Boolean = false,
@@ -153,7 +184,7 @@ fun XcraDropDown(
                 value = selected,
                 onValueChange = {},
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text(text = stringResource(id = titleResId)) },
+                label = { Text(text = title) },
                 singleLine = true,
                 readOnly = true,
                 trailingIcon = {

@@ -22,20 +22,20 @@ object ParserTrojan : Parser() {
         val config = NodeItem.create(ConfigType.TROJAN)
 
         val uri = URI(Utils.fixIllegalUrl(str))
-        config.remarks =
+        config["remarks"] =
             Utils.urlDecode(uri.fragment.orEmpty()).let { it.ifEmpty { "none" } }
-        config.address = uri.idnHost
-        config.port = uri.port.toString()
-        config.password = uri.userInfo
+        config["address"] = uri.idnHost
+        config["port"] = uri.port.toString()
+        config["password"] = uri.userInfo
 
 
         if (uri.rawQuery.isNullOrEmpty()) {
-            config.transport = TransportType.TCP.type
-            config.security = AppConfig.TLS
+            config["transport"] = TransportType.TCP.type
+            config["security"] = AppConfig.TLS
         } else {
             val queryParam = getQueryParam(uri)
             getTransportFormQuery(config, queryParam)
-            config.security = queryParam["security"] ?: AppConfig.TLS
+            config["security"] = queryParam["security"] ?: AppConfig.TLS
         }
         return config
     }
@@ -48,7 +48,7 @@ object ParserTrojan : Parser() {
      */
     fun toUri(config: NodeItem): String {
         val dicQuery = getQueryTransportDic(config)
-        return toUri(config, config.password, dicQuery)
+        return toUri(config, config["password"], dicQuery)
     }
 
     /**
@@ -63,7 +63,7 @@ object ParserTrojan : Parser() {
             outbound.settings = Outbound.TrojanSetting(
                 address = nodeItem.addressConfig,
                 port = it,
-                password = nodeItem.password
+                password = nodeItem["password"]
             )
             populateTransportSettings(outbound, nodeItem)
             populateSecuritySettings(outbound, nodeItem)

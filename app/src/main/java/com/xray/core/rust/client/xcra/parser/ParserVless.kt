@@ -21,13 +21,13 @@ object ParserVless : Parser() {
         val uri = URI(Utils.fixIllegalUrl(str))
         if (uri.rawQuery.isNullOrEmpty()) return null
         val queryParam = getQueryParam(uri)
-        config.remarks =
+        config["remarks"] =
             Utils.urlDecode(uri.fragment.orEmpty()).let { it.ifEmpty { "none" } }
-        config.address = uri.idnHost
-        config.port = uri.port.toString()
-        config.uuid = uri.userInfo
-        config.vlessEncryption = queryParam["encryption"] ?: "none"
-        config.vlessFlow = queryParam["flow"] ?: ""
+        config["address"] = uri.idnHost
+        config["port"] = uri.port.toString()
+        config["uuid"] = uri.userInfo
+        config["vless_encryption"] = queryParam["encryption"] ?: "none"
+        config["vless_flow"] = queryParam["flow"] ?: ""
         getTransportFormQuery(config, queryParam)
         return config
     }
@@ -40,10 +40,10 @@ object ParserVless : Parser() {
      */
     fun toUri(config: NodeItem): String {
         val dicQuery = getQueryTransportDic(config)
-        dicQuery["encryption"] = config.vlessEncryption ?: "none"
-        dicQuery["flow"] = config.vlessFlow ?: ""
+        dicQuery["encryption"] = config["vless_encryption"] ?: "none"
+        dicQuery["flow"] = config["vless_flow"] ?: ""
 
-        return toUri(config, config.uuid, dicQuery)
+        return toUri(config, config["uuid"], dicQuery)
     }
 
     /**
@@ -58,9 +58,9 @@ object ParserVless : Parser() {
             outbound.settings = Outbound.VlessSetting(
                 address = nodeItem.addressConfig,
                 port = it,
-                id = nodeItem.uuid,
-                encryption = nodeItem.vlessEncryption,
-                flow = nodeItem.vlessFlow,
+                id = nodeItem["uuid"],
+                encryption = nodeItem["vless_encryption"],
+                flow = nodeItem["vless_flow"],
             )
             populateTransportSettings(outbound, nodeItem)
             populateSecuritySettings(outbound, nodeItem)

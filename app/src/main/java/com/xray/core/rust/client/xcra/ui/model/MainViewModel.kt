@@ -119,7 +119,7 @@ class MainViewModel(
                 continue
             }
             val info = DatabaseHandler.decodeNodeInfo(uuid)
-            if (filter.isEmpty() || node.remarks.lowercase()
+            if (filter.isEmpty() || node.get("remarks").orEmpty().lowercase()
                     .contains(filter.lowercase())
             ) {
                 nodes.add(NodeUiItem(uuid, node, mutableStateOf(info)))

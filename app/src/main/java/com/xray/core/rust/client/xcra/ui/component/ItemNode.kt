@@ -55,6 +55,13 @@ fun ItemNodeCard(
 ) {
 
     val model = MainViewModelAccessor.mainViewModel
+
+    val indicatorColor = if (item.uuid == model.selectedNodeUuid.value) {
+        MaterialTheme.colorScheme.onBackground
+    } else {
+        Color.Transparent
+    }
+
     val top = if (isFirst) {
         12.dp
     } else {
@@ -80,11 +87,6 @@ fun ItemNodeCard(
                     .fillMaxWidth()
                     .height(IntrinsicSize.Min)
             ) {
-                val indicatorColor = if (item.uuid == model.selectedNodeUuid.value) {
-                    MaterialTheme.colorScheme.onBackground
-                } else {
-                    Color.Transparent
-                }
 
                 // Indicator
                 Box(
@@ -95,11 +97,11 @@ fun ItemNodeCard(
                         .background(indicatorColor)
 
                 )
+
                 Spacer(modifier = Modifier.height(4.dp))
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(IntrinsicSize.Min)
                         .padding(
                             8.dp
                         )
@@ -108,7 +110,6 @@ fun ItemNodeCard(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(IntrinsicSize.Min)
                     ) {
                         // Main info
                         Column(
@@ -116,7 +117,7 @@ fun ItemNodeCard(
                                 .weight(1f)
                         ) {
                             Text(
-                                text = item.nodeItem.remarks,
+                                text = item.nodeItem["remarks"].orEmpty(),
                                 style = MaterialTheme.typography.bodyMedium,
                                 maxLines = 2
                             )
@@ -150,8 +151,12 @@ fun ItemNodeCard(
                         }
 
                         // Action buttons
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(onClick = { onShare() }) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(
+                                onClick = { onShare() }
+                            ) {
                                 Icon(
                                     imageVector = Icons.Default.Share,
                                     contentDescription = "Share"
