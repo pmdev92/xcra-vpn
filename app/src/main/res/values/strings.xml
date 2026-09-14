@@ -39,6 +39,7 @@
     <string name="node_lab_host">Host</string>
     <string name="node_lab_path">Path</string>
     <string name="node_lab_service_name">Service name</string>
+    <string name="node_lab_extra_config">Extra Config (JSON)</string>
     <string name="node_lab_sni">Sni</string>
     <string name="node_lab_insecure">Insecure</string>
     <string name="node_lab_public_key">Public key</string>

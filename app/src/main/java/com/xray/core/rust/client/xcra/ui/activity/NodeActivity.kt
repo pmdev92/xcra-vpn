@@ -21,6 +21,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -33,6 +34,7 @@ import com.xray.core.rust.client.xcra.config.BooleanDropDownItem
 import com.xray.core.rust.client.xcra.config.DividerItem
 import com.xray.core.rust.client.xcra.config.DropDownItem
 import com.xray.core.rust.client.xcra.config.IntegerItem
+import com.xray.core.rust.client.xcra.config.JsonItem
 import com.xray.core.rust.client.xcra.config.TextItem
 import com.xray.core.rust.client.xcra.config.TitleItem
 import com.xray.core.rust.client.xcra.enums.ConfigType
@@ -40,6 +42,7 @@ import com.xray.core.rust.client.xcra.handler.DatabaseHandler
 import com.xray.core.rust.client.xcra.ui.component.XcraDividerField
 import com.xray.core.rust.client.xcra.ui.component.XcraDropDown
 import com.xray.core.rust.client.xcra.ui.component.XcraEditTextField
+import com.xray.core.rust.client.xcra.ui.component.XcraExtraConfigButton
 import com.xray.core.rust.client.xcra.ui.component.XcraTitleTextField
 
 import com.xray.core.rust.client.xcra.ui.model.NodeViewModel
@@ -130,13 +133,11 @@ fun NodeScreen(
         fields.forEachIndexed { index, entry ->
             if (entry is DividerItem) {
                 XcraDividerField()
-            }
-            if (entry is TitleItem) {
+            } else if (entry is TitleItem) {
                 XcraTitleTextField(
                     title = entry.title,
                 )
-            }
-            if (entry is TextItem) {
+            } else if (entry is TextItem) {
                 XcraEditTextField(
                     title = entry.title,
                     value = entry.getDisplayValue(),
@@ -145,8 +146,7 @@ fun NodeScreen(
                     helperText = entry.helperText,
                     errorMessage = entry.errorMessage,
                 )
-            }
-            if (entry is IntegerItem) {
+            } else if (entry is IntegerItem) {
                 XcraEditTextField(
                     title = entry.title,
                     value = entry.getDisplayValue(),
@@ -156,8 +156,7 @@ fun NodeScreen(
                     helperText = entry.helperText,
                     errorMessage = entry.errorMessage,
                 )
-            }
-            if (entry is DropDownItem) {
+            } else if (entry is DropDownItem) {
                 XcraDropDown(
                     title = entry.title,
                     items = entry.items,
@@ -165,13 +164,18 @@ fun NodeScreen(
                     onValueChange = { model.updateItemValue(entry, it) },
                     isCapitalize = entry.isCapitalize
                 )
-            }
-            if (entry is BooleanDropDownItem) {
+            } else if (entry is BooleanDropDownItem) {
                 XcraDropDown(
                     title = entry.title,
                     items = entry.items,
                     selected = entry.getDisplayValue(),
                     onValueChange = { model.updateItemValue(entry, it) },
+                )
+            } else if (entry is JsonItem) {
+                XcraExtraConfigButton(
+                    title = entry.title,
+                    value = entry.getDisplayValue(),
+                    onValueChange = { model.updateItemValue(entry, it) }
                 )
             }
             if (index != fields.lastIndex && entry !is DividerItem && entry !is TitleItem) {

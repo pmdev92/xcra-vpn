@@ -151,6 +151,38 @@ class BooleanDropDownItem(
     }
 }
 
+class JsonItem(
+    key: String,
+    title: String,
+    initialValue: String = "",
+    helperText: String? = null,
+    errorMessage: String? = null,
+) : ConfigurableItem(key, title, helperText, errorMessage) {
+    private var value by mutableStateOf(initialValue)
+
+    override fun updateValue(newValue: String) {
+        value = format(value)
+        clearError()
+    }
+
+    override fun getValue(): String {
+        return value
+    }
+
+    override fun getDisplayValue(): String {
+        return value
+    }
+
+    private fun format(s: String): String {
+        val formatted = try {
+            org.json.JSONObject(s).toString(4)
+        } catch (_: Exception) {
+            s
+        }
+        return formatted
+    }
+}
+
 class DropDownItem(
     key: String,
     title: String,
@@ -287,6 +319,7 @@ fun getTransportKeys(node: NodeItem): List<String> {
             keys.add("x_http_mode")
             keys.add("host")
             keys.add("path")
+            keys.add("extra_config")
         }
 
         transportValue.equals("http/2", true) -> {
@@ -523,6 +556,13 @@ fun createItemFromKey(application: Application, key: String): Item {
             application.getString(R.string.node_lab_service_name),
             helperText = "Service name for gRPC",
             errorMessage = application.getErrorMessage(R.string.node_lab_service_name)
+        )
+
+        "extra_config" -> JsonItem(
+            "extra_config",
+            application.getString(R.string.node_lab_extra_config),
+            helperText = "JSON config for XHTTP (editable)",
+            errorMessage = application.getErrorMessage(R.string.node_lab_extra_config)
         )
 
         "security" -> DropDownItem(

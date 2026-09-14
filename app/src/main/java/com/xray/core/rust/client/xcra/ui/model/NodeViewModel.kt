@@ -43,10 +43,11 @@ class NodeViewModel(application: Application) : AndroidViewModel(application) {
     constructor(
         application: Application,
         editUuid: String,
-        config: NodeItem,
+        node: NodeItem,
         subscriptionId: String?
     ) : this(application) {
-        this.nodeItem = config
+        this.nodeItem = node
+
         this.editUuid = editUuid
         this.groupId = subscriptionId
         isNew = false
@@ -67,6 +68,7 @@ class NodeViewModel(application: Application) : AndroidViewModel(application) {
     private fun initialize() {
         createItems()
         if (!isNew) {
+
             applyNodeItems()
         }
         validateItems()
@@ -111,6 +113,7 @@ class NodeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun updateItemValue(item: ConfigurableItem, value: String) {
+
         item.updateValue(value)
         val key = item.key
         nodeItem[key] = value
@@ -192,6 +195,7 @@ class NodeViewModel(application: Application) : AndroidViewModel(application) {
         if (isNew) {
             nodeItem.addedTime = System.currentTimeMillis()
         }
+
         DatabaseHandler.encodeNodeItem(this.editUuid.orEmpty(), nodeItem, true)
         return true
     }
