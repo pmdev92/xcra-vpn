@@ -143,10 +143,10 @@ data class Outbound(
         var tcpSettings: TcpSettings? = null,
         @SerializedName("ws_settings")
         var wsSettings: WsSettings? = null,
-        @SerializedName("httpupgrade_settings")
+        @SerializedName("http_upgrade_settings")
         var httpUpgradeSettings: HttpUpgradeSettings? = null,
-        @SerializedName("xhttp_settings")
-        var xHttpSettings: XHttpSettings? = null,
+        @SerializedName("x_http_settings")
+        var xHttpSettings: XHttpConfig? = null,
         @SerializedName("http_settings")
         var http2Settings: Http2Settings? = null,
         @SerializedName("grpc_settings")
@@ -164,6 +164,10 @@ data class Outbound(
         var earlyDataLen: Int? = null,
         @SerializedName("alpn")
         var alpn: List<String>? = null,
+        @SerializedName("pinned_peer_cert_sha256")
+        var pinnedPeerCertSha256: List<String>? = null,
+        @SerializedName("verify_peer_cert_by_name")
+        var verifyPeerCertByName: List<String>? = null,
     )
 
     data class RealitySettings(
@@ -222,24 +226,91 @@ data class Outbound(
         var path: String? = null,
     )
 
-    data class XHttpSettings(
+    data class XHttpConfig(
         @SerializedName("host")
         var host: String? = null,
         @SerializedName("path")
         var path: String? = null,
         @SerializedName("mode")
         var mode: String? = null,
-        @SerializedName("headers")
-        var headers: HashMap<String, String>? = null,
-        @SerializedName("no_grpc_header")
-        var noGrpcHeader: Boolean = false,
-        @SerializedName("x_padding_bytes_min")
-        var xPaddingBytesMin: Int? = null,
-        @SerializedName("x_padding_bytes_max")
-        var xPaddingBytesMax: Int? = null,
-        @SerializedName("packet_up_intervar_ms")
-        var packetUpIntervarMs: Int? = null,
-    )
+        @SerializedName("extra")
+        var extra: XHttpConfigExtra? = null,
+    ) : Setting() {
+        data class XHttpConfigXmux(
+            @SerializedName("max_concurrency")
+            var maxConcurrency: String? = null,
+            @SerializedName("max_connections")
+            var maxConnections: String? = null,
+            @SerializedName("c_max_reuse_times")
+            var cMaxReuseTimes: String? = null,
+            @SerializedName("h_max_request_times")
+            var hMaxRequestTimes: String? = null,
+            @SerializedName("h_max_reusable_secs")
+            var hMaxReusableSecs: String? = null,
+            @SerializedName("h_keep_alive_period")
+            var hKeepAlivePeriod: Long? = null
+        )
+
+        data class XHttpConfigDownloadSettings(
+            @SerializedName("address")
+            var address: String? = null,
+            @SerializedName("port")
+            var port: Int? = null,
+            @SerializedName("transport")
+            var transport: String? = null,
+            @SerializedName("security")
+            var security: String? = null,
+            @SerializedName("tls_settings")
+            var tlsSettings: TlsSettings? = null,
+            @SerializedName("reality_settings")
+            var realitySettings: RealitySettings? = null,
+            @SerializedName("x_http_settings")
+            var xHttpSettings: XHttpConfig? = null,
+        )
+
+        data class XHttpConfigExtra(
+            @SerializedName("headers")
+            var headers: HashMap<String, String>? = null,
+            @SerializedName("no_grpc_header")
+            var noGrpcHeader: Boolean? = null,
+            @SerializedName("x_padding_bytes")
+            var xPaddingBytes: String? = null,
+            @SerializedName("x_padding_obfs_mode")
+            var xPaddingObfsMode: Boolean? = null,
+            @SerializedName("x_padding_key")
+            var xPaddingKey: String? = null,
+            @SerializedName("x_padding_header")
+            var xPaddingHeader: String? = null,
+            @SerializedName("x_padding_placement")
+            var xPaddingPlacement: String? = null,
+            @SerializedName("x_padding_method")
+            var xPaddingMethod: String? = null,
+            @SerializedName("sc_max_each_post_bytes")
+            var scMaxEachPostBytes: String? = null,
+            @SerializedName("sc_min_posts_interval_ms")
+            var scMinPostsIntervalMs: String? = null,
+            @SerializedName("uplink_http_method")
+            var uplinkHttpMethod: String? = null,
+            @SerializedName("uplink_data_placement")
+            var uplinkDataPlacement: String? = null,
+            @SerializedName("uplink_data_key")
+            var uplinkDataKey: String? = null,
+            @SerializedName("uplink_chunk_size")
+            var uplinkChunkSize: String? = null,
+            @SerializedName("session_placement")
+            var sessionPlacement: String? = null,
+            @SerializedName("session_key")
+            var sessionKey: String? = null,
+            @SerializedName("seq_placement")
+            var seqPlacement: String? = null,
+            @SerializedName("seq_key")
+            var seqKey: String? = null,
+            @SerializedName("xmux")
+            var xmux: XHttpConfigXmux? = null,
+            @SerializedName("download_settings")
+            var downloadSettings: XHttpConfigDownloadSettings? = null,
+        )
+    }
 
     data class Http2Settings(
         @SerializedName("host")

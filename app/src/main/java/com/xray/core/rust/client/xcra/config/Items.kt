@@ -161,7 +161,7 @@ class JsonItem(
     private var value by mutableStateOf(initialValue)
 
     override fun updateValue(newValue: String) {
-        value = format(value)
+        value = format(newValue)
         clearError()
     }
 
@@ -319,7 +319,7 @@ fun getTransportKeys(node: NodeItem): List<String> {
             keys.add("x_http_mode")
             keys.add("host")
             keys.add("path")
-            keys.add("extra_config")
+            keys.add("extra_json")
         }
 
         transportValue.equals("http/2", true) -> {
@@ -344,6 +344,8 @@ fun getSecurityKeys(node: NodeItem): List<String> {
         securityValue.equals("tls", true) -> {
             keys.add("sni")
             keys.add("insecure")
+            keys.add("pcs")
+            keys.add("pcn")
             keys.add("alpn")
         }
 
@@ -558,11 +560,11 @@ fun createItemFromKey(application: Application, key: String): Item {
             errorMessage = application.getErrorMessage(R.string.node_lab_service_name)
         )
 
-        "extra_config" -> JsonItem(
-            "extra_config",
-            application.getString(R.string.node_lab_extra_config),
+        "extra_json" -> JsonItem(
+            "extra_json",
+            application.getString(R.string.node_lab_extra_json),
             helperText = "JSON config for XHTTP (editable)",
-            errorMessage = application.getErrorMessage(R.string.node_lab_extra_config)
+            errorMessage = application.getErrorMessage(R.string.node_lab_extra_json)
         )
 
         "security" -> DropDownItem(
@@ -587,6 +589,20 @@ fun createItemFromKey(application: Application, key: String): Item {
             errorMessage = application.getErrorMessage(R.string.node_lab_insecure)
         )
 
+        "pcs" -> TextItem(
+            key,
+            application.getString(R.string.node_lab_pcs),
+            helperText = "Pinned peer cert SHA256 (comma separated). Not applied in insecure mode.",
+            errorMessage = application.getErrorMessage(R.string.node_lab_pcs)
+        )
+
+        "pcn" -> TextItem(
+            key,
+            application.getString(R.string.node_lab_pcn),
+            helperText = "Verify peer cert by name (comma separated). Not applied in insecure mode.",
+            errorMessage = application.getErrorMessage(R.string.node_lab_pcn)
+        )
+
         "alpn" -> DropDownItem(
             key,
             application.getString(R.string.node_lab_security_alpn),
@@ -608,6 +624,7 @@ fun createItemFromKey(application: Application, key: String): Item {
             helperText = "Reality short ID",
             errorMessage = application.getErrorMessage(R.string.node_lab_short_id)
         )
+
 
         else -> DividerItem(key)
     }

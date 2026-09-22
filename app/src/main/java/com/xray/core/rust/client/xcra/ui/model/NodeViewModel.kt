@@ -122,7 +122,9 @@ class NodeViewModel(application: Application) : AndroidViewModel(application) {
 
     fun applyNodeItems() {
         for (key in getKeys()) {
+
             val value = nodeItem[key] ?: ""
+
             itemsMap[key]?.let {
                 if (it is ConfigurableItem) {
                     it.updateValue(value)

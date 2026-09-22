@@ -11,21 +11,26 @@ data class NodeItem(
     val configType: ConfigType,
     var groupId: String = "",
     var addedTime: Long = System.currentTimeMillis(),
-    private val fields: MutableMap<String, String?> = mutableMapOf(),
+    private var fields: MutableMap<String, String?>? = mutableMapOf(),
 ) {
     companion object {
         fun create(configType: ConfigType): NodeItem {
             return NodeItem(configType = configType)
         }
     }
-    
-    operator fun get(key: String): String? = fields[key]
+
+    operator fun get(key: String): String? {
+        return fields?.get(key)
+    }
 
     operator fun set(key: String, value: String?) {
+        if (fields == null) {
+            fields = mutableMapOf();
+        }
         if (value == null || value.isEmpty()) {
-            fields.remove(key)
+            fields?.remove(key)
         } else {
-            fields[key] = value
+            fields?.set(key, value)
         }
     }
 
@@ -38,11 +43,13 @@ data class NodeItem(
                 else if (it.contains("."))
                     it.split('.').dropLast(1).joinToString(".", postfix = ".***")
                 else it
+            }.orEmpty()
+            if (!address.isEmpty()) {
+                this["port"]?.let {
+                    return "$address:${it}"
+                }
             }
-            this["port"]?.let {
-                return "$address:${it}"
-            }
-            return "$address"
+            return address
         }
 
     val subscriptionRemarks: String

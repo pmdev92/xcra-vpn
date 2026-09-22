@@ -1,5 +1,6 @@
 package com.xray.core.rust.client.xcra.parser
 
+import com.xray.core.rust.client.xcra.App
 import com.xray.core.rust.client.xcra.dto.AppConfig
 import com.xray.core.rust.client.xcra.dto.NodeItem
 import com.xray.core.rust.client.xcra.dto.core.outbound.Outbound
@@ -12,10 +13,16 @@ import com.xray.core.rust.client.xcra.enums.TransportType.TCP
 import com.xray.core.rust.client.xcra.enums.TransportType.WS
 import com.xray.core.rust.client.xcra.enums.TransportType.XHTTP
 import com.xray.core.rust.client.xcra.extension.isNotNullEmpty
+import com.xray.core.rust.client.xcra.extension.optBooleanOrNull
+import com.xray.core.rust.client.xcra.extension.optJSONObjectOrNull
+import com.xray.core.rust.client.xcra.extension.optLongOrNull
+import com.xray.core.rust.client.xcra.extension.optStringOrNull
 import com.xray.core.rust.client.xcra.handler.DatabaseHandler
 import com.xray.core.rust.client.xcra.util.HttpUtil
 import com.xray.core.rust.client.xcra.util.Utils
 import java.net.URI
+import java.net.URLDecoder
+import java.net.URLEncoder
 
 open class Parser {
     /**
@@ -56,25 +63,104 @@ open class Parser {
 
     /**
      * Populates a NodeItem object with values from query parameters.
-     *
-     * @param config the NodeItem object to populate
-     * @param queryParam the query parameters to use for populating the NodeItem
      */
+    private fun parseXHttpExtraFromNode(jsonStr: String?): Outbound.XHttpConfig.XHttpConfigExtra? {
+
+        val jsonStr = jsonStr ?: return null
+        return try {
+            val extraJson = org.json.JSONObject(jsonStr)
+            val extra = Outbound.XHttpConfig.XHttpConfigExtra()
+
+            val headersJson = extraJson.optJSONObjectOrNull("headers")
+            if (headersJson != null) {
+                val map = HashMap<String, String>()
+                headersJson.keys().forEach { k -> map[k] = headersJson.optString(k) }
+                extra.headers = map;
+            }
+
+            extra.noGrpcHeader = extraJson.optBooleanOrNull("noGrpcHeader")
+            extra.xPaddingBytes = extraJson.optStringOrNull("xPaddingBytes")
+            extra.xPaddingObfsMode = extraJson.optBooleanOrNull("xPaddingObfsMode")
+            extra.xPaddingKey = extraJson.optStringOrNull("xPaddingKey")
+            extra.xPaddingHeader = extraJson.optStringOrNull("xPaddingHeader")
+            extra.xPaddingPlacement = extraJson.optStringOrNull("xPaddingPlacement")
+            extra.xPaddingMethod = extraJson.optStringOrNull("xPaddingMethod")
+            extra.scMaxEachPostBytes = extraJson.optStringOrNull("scMaxEachPostBytes")
+            extra.scMinPostsIntervalMs = extraJson.optStringOrNull("scMinPostsIntervalMs")
+            extra.uplinkHttpMethod = extraJson.optStringOrNull("uplinkHttpMethod")
+            extra.uplinkDataPlacement = extraJson.optStringOrNull("uplinkDataPlacement")
+            extra.uplinkDataKey = extraJson.optStringOrNull("uplinkDataKey")
+            extra.uplinkChunkSize = extraJson.optStringOrNull("uplinkChunkSize")
+            extra.sessionPlacement = extraJson.optStringOrNull("sessionPlacement")
+            extra.sessionKey = extraJson.optStringOrNull("sessionKey")
+            extra.seqPlacement = extraJson.optStringOrNull("seqPlacement")
+            extra.seqKey = extraJson.optStringOrNull("seqKey")
+            val xmuxJson = extraJson.optJSONObjectOrNull("xmux")
+            if (xmuxJson != null) {
+                val xmux = Outbound.XHttpConfig.XHttpConfigXmux()
+                xmux.maxConcurrency = xmuxJson.optStringOrNull("maxConcurrency")
+                xmux.maxConnections = xmuxJson.optStringOrNull("maxConnections")
+                xmux.cMaxReuseTimes = xmuxJson.optStringOrNull("cMaxReuseTimes")
+                xmux.hMaxRequestTimes = xmuxJson.optStringOrNull("hMaxRequestTimes")
+                xmux.hMaxReusableSecs = xmuxJson.optStringOrNull("hMaxReusableSecs")
+                xmux.hKeepAlivePeriod = xmuxJson.optLongOrNull("hKeepAlivePeriod")
+                extra.xmux = xmux
+            }
+            val dlJson = extraJson.optJSONObjectOrNull("downloadSettings")
+            if (dlJson != null) {
+                val dl = Outbound.XHttpConfig.XHttpConfigDownloadSettings()
+                dl.address = dlJson.optStringOrNull("address")
+                dl.port = dlJson.getInt("port")
+                dl.transport = dlJson.optStringOrNull("transport")
+                dl.security = dlJson.optStringOrNull("security")
+                if (dlJson.has("tlsSettings")) {
+                    val tls = dlJson.getJSONObject("tlsSettings")
+                    val tlsSettings = Outbound.TlsSettings()
+                    tlsSettings.serverName = tls.optStringOrNull("serverName")
+                    tlsSettings.verify = !tls.optBoolean("insecure")
+                    dl.tlsSettings = tlsSettings
+                }
+                if (dlJson.has("realitySettings")) {
+                    val reality = dlJson.getJSONObject("realitySettings")
+                    val realitySettings = Outbound.RealitySettings()
+                    realitySettings.serverName = reality.optStringOrNull("serverName")
+                    realitySettings.publicKey = reality.optStringOrNull("publicKey")
+                    realitySettings.shortId = reality.optStringOrNull("shortId")
+                    dl.realitySettings = realitySettings
+                }
+                if (dlJson.has("xHttpSetting")) {
+                    val xHttp = dlJson.getJSONObject("xHttpSetting")
+                    val xHttpSettings = Outbound.XHttpConfig()
+                    xHttpSettings.host = xHttp.optStringOrNull("host")
+                    xHttpSettings.path = xHttp.optStringOrNull("path")
+                    xHttpSettings.mode = xHttp.optStringOrNull("mode")
+                    xHttpSettings.extra = parseXHttpExtraFromNode(xHttp.optStringOrNull("extra"))
+                    dl.xHttpSettings = xHttpSettings
+                }
+                extra.downloadSettings = dl
+            }
+            extra
+        } catch (e: Exception) {
+            App.log("json aaaa ${e}")
+            null
+        }
+    }
+
     fun getTransportFormQuery(
-        config: NodeItem,
+        node: NodeItem,
         queryParam: Map<String, String>,
     ) {
-        config["transport"] = queryParam["type"] ?: TransportType.TCP.type
-        config["header_type"] = queryParam["headerType"]
-        config["host"] = queryParam["host"]
-        config["path"] = queryParam["path"]
+        node["transport"] = queryParam["type"] ?: TCP.type
+        node["header_type"] = queryParam["headerType"]
+        node["host"] = queryParam["host"]
+        node["path"] = queryParam["path"]
 
-        config["service_name"] = queryParam["serviceName"]
-        config["x_http_mode"] = queryParam["mode"]
+        node["service_name"] = queryParam["serviceName"]
+        node["x_http_mode"] = queryParam["mode"]
 
-        config["security"] = queryParam["security"]
-        if (config["security"] != AppConfig.TLS && config["security"] != AppConfig.REALITY) {
-            config["security"] = null
+        node["security"] = queryParam["security"]
+        if (node["security"] != AppConfig.TLS && node["security"] != AppConfig.REALITY) {
+            node["security"] = null
         }
         // Support multiple possible query keys for allowInsecure like the C# implementation
         val allowInsecureKeys = arrayOf(
@@ -83,7 +169,7 @@ open class Parser {
             "allow_insecure"
         )
 
-        config["insecure"] = when {
+        node["insecure"] = when {
             allowInsecureKeys.any { key ->
                 queryParam.entries.any { (paramKey, value) ->
                     paramKey.equals(key, ignoreCase = true) && value == "1"
@@ -97,12 +183,19 @@ open class Parser {
             } -> "0"
 
             else -> null
-
         }
-        config["sni"] = queryParam["sni"]
-        config["alpn"] = queryParam["alpn"]
-        config["public_key"] = queryParam["pbk"]
-        config["short_id"] = queryParam["sid"]
+
+        node["sni"] = queryParam["sni"]
+        node["alpn"] = queryParam["alpn"]
+        node["public_key"] = queryParam["pbk"]
+        node["short_id"] = queryParam["sid"]
+        node["pcs"] = queryParam["pcs"]
+        node["pcn"] = queryParam["pcn"]
+
+        node["extra_json"] = URLDecoder.decode(
+            queryParam["extra"].orEmpty(),
+            "UTF-8"
+        )
     }
 
     /**
@@ -118,6 +211,11 @@ open class Parser {
         config["alpn"].let { if (it.isNotNullEmpty()) dicQuery["alpn"] = it.orEmpty() }
         config["public_key"].let { if (it.isNotNullEmpty()) dicQuery["pbk"] = it.orEmpty() }
         config["short_id"].let { if (it.isNotNullEmpty()) dicQuery["sid"] = it.orEmpty() }
+        config["extra_json"].let {
+            if (it.isNotNullEmpty()) {
+                dicQuery["extra"] = URLEncoder.encode(it.orEmpty(), "UTF-8")
+            }
+        }
         // Add two keys for compatibility: "insecure" and "allowInsecure"
         if (config["security"] == AppConfig.TLS) {
             val insecureFlag = if (config["insecure"] == "1") "1" else "0"
@@ -197,7 +295,6 @@ open class Parser {
                     tcpSettings.type = "http"
                     val request = Outbound.TcpSettings.TcpRequest()
                     request.path = path ?: "/"
-
                     if (host.isNotNullEmpty()) {
                         request.headers["Host"] = host as String
                     }
@@ -223,10 +320,11 @@ open class Parser {
             }
 
             XHTTP.type -> {
-                val xHttpSettings = Outbound.XHttpSettings()
+                val xHttpSettings = Outbound.XHttpConfig()
                 xHttpSettings.host = host.orEmpty()
                 xHttpSettings.path = path ?: "/"
                 xHttpSettings.mode = xhttpMode
+                xHttpSettings.extra = parseXHttpExtraFromNode(nodeItem["extra_json"])
                 streamSettings.xHttpSettings = xHttpSettings
             }
 
@@ -286,6 +384,16 @@ open class Parser {
             streamSettings.tlsSettings?.serverName = sni
             streamSettings.tlsSettings?.verify = !allowInsecure
             streamSettings.tlsSettings?.alpn = alpnsArray
+            if (nodeItem["pcs"] != null) {
+                val pcsArray = nodeItem["pcs"].toString().split(",").map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                streamSettings.tlsSettings?.pinnedPeerCertSha256 = pcsArray
+            }
+            if (nodeItem["pcn"] != null) {
+                val pcnArray = nodeItem["pcn"].toString().split(",").map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                streamSettings.tlsSettings?.verifyPeerCertByName = pcnArray
+            }
         }
         if (streamSettings.security == AppConfig.REALITY) {
             streamSettings.tlsSettings = null
