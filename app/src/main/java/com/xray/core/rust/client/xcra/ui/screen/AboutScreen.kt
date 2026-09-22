@@ -27,21 +27,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.xray.core.rust.client.xcra.BuildConfig
 import com.xray.core.rust.client.xcra.R
 import com.xray.core.rust.client.xcra.enums.AboutItem
+import com.xray.core.rust.client.xcra.ui.component.VersionInformation
 
 @Composable
 fun AboutScreen(
     path: String,
     onClick: (AboutItem) -> Unit,
 ) {
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(vertical = 8.dp)
     ) {
+
 
         // Backup
         PreferenceItem(
@@ -120,18 +123,7 @@ fun AboutScreen(
 
         Spacer(modifier = Modifier.weight(1F))
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Version: ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.bodySmall)
-            Text(
-                "App ID: ${BuildConfig.APPLICATION_ID}",
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
+        VersionInformation()
     }
 }
 

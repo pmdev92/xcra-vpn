@@ -78,7 +78,6 @@ class AboutActivity : ComponentActivity() {
                 )
                 { innerPadding ->
                     Screen(
-
                         modifier = Modifier.padding(innerPadding),
                         path = path,
                         onClick = {
