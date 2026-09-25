@@ -346,6 +346,7 @@ fun getSecurityKeys(node: NodeItem): List<String> {
             keys.add("insecure")
             keys.add("pcs")
             keys.add("pcn")
+            keys.add("ech")
             keys.add("alpn")
         }
 
@@ -601,6 +602,13 @@ fun createItemFromKey(application: Application, key: String): Item {
             application.getString(R.string.node_lab_pcn),
             helperText = "Verify peer cert by name (comma separated). Not applied in insecure mode.",
             errorMessage = application.getErrorMessage(R.string.node_lab_pcn)
+        )
+
+        "ech" -> TextItem(
+            key,
+            application.getString(R.string.node_lab_ech),
+            helperText = "Encrypted Client Hello config",
+            errorMessage = application.getErrorMessage(R.string.node_lab_ech)
         )
 
         "alpn" -> DropDownItem(

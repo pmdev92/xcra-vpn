@@ -46,6 +46,7 @@
     <string name="node_lab_short_id">Short id</string>
     <string name="node_lab_pcs">Pinned cert SHA256</string>
     <string name="node_lab_pcn">Peer cert name</string>
+    <string name="node_lab_ech">ECH config</string>
 
     <string name="group_lab_title">Group settings</string>
     <string name="group_lab_remarks">Remarks</string>

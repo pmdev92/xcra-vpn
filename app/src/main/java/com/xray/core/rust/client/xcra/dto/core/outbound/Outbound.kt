@@ -168,6 +168,8 @@ data class Outbound(
         var pinnedPeerCertSha256: List<String>? = null,
         @SerializedName("verify_peer_cert_by_name")
         var verifyPeerCertByName: List<String>? = null,
+        @SerializedName("ech_config_list")
+        var echConfigList: String? = null,
     )
 
     data class RealitySettings(

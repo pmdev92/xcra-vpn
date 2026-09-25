@@ -191,6 +191,7 @@ open class Parser {
         node["short_id"] = queryParam["sid"]
         node["pcs"] = queryParam["pcs"]
         node["pcn"] = queryParam["pcn"]
+        node["ech"] = queryParam["ech"]
 
         node["extra_json"] = URLDecoder.decode(
             queryParam["extra"].orEmpty(),
@@ -209,6 +210,9 @@ open class Parser {
         dicQuery["security"] = config["security"]?.ifEmpty { "none" }.orEmpty()
         config["sni"].let { if (it.isNotNullEmpty()) dicQuery["sni"] = it.orEmpty() }
         config["alpn"].let { if (it.isNotNullEmpty()) dicQuery["alpn"] = it.orEmpty() }
+        config["pcs"].let { if (it.isNotNullEmpty()) dicQuery["pcs"] = it.orEmpty() }
+        config["pcn"].let { if (it.isNotNullEmpty()) dicQuery["pcn"] = it.orEmpty() }
+        config["ech"].let { if (it.isNotNullEmpty()) dicQuery["ech"] = it.orEmpty() }
         config["public_key"].let { if (it.isNotNullEmpty()) dicQuery["pbk"] = it.orEmpty() }
         config["short_id"].let { if (it.isNotNullEmpty()) dicQuery["sid"] = it.orEmpty() }
         config["extra_json"].let {
@@ -393,6 +397,9 @@ open class Parser {
                 val pcnArray = nodeItem["pcn"].toString().split(",").map { it.trim() }
                     .filter { it.isNotEmpty() }
                 streamSettings.tlsSettings?.verifyPeerCertByName = pcnArray
+            }
+            if (nodeItem["ech"] != null) {
+                streamSettings.tlsSettings?.echConfigList = nodeItem["ech"]
             }
         }
         if (streamSettings.security == AppConfig.REALITY) {
